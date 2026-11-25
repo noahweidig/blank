@@ -18,17 +18,14 @@ export default defineConfig({
     hmr: host ? { protocol: 'ws', host, port: 5183 } : undefined,
     watch: { ignored: ['**/src-tauri/**'] },
   },
-  // Tauri targets a modern webview; iOS Safari 14 is the oldest we care about.
+  // WKWebView on macOS is the only target.
   build: {
-    target: ['es2021', 'chrome100', 'safari14'],
+    target: ['es2021', 'safari14'],
     sourcemap: !!process.env.TAURI_DEBUG,
     rollupOptions: {
-      // Three pages: the marketing site at /, the install guide at /install,
-      // and the writing app at /app.
+      // The writing app is the only page; Tauri loads app.html.
       input: {
-        landing: fileURLToPath(new URL('./index.html', import.meta.url)),
         app: fileURLToPath(new URL('./app.html', import.meta.url)),
-        install: fileURLToPath(new URL('./install.html', import.meta.url)),
       },
     },
   },

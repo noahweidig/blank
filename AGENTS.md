@@ -1,10 +1,10 @@
 # AGENTS.md
 
 Blank is a local-first, distraction-free freewriting app, modelled on Freewrite. One
-TypeScript codebase ships four surfaces: a desktop app (Tauri v2, macOS only), a
-web app, a marketing landing page and an install guide. Writing is stored as one plain
-Markdown file per entry in a folder the user picks, so the archive stays readable in any
-editor. The browser falls back to IndexedDB.
+TypeScript codebase ships one product: a macOS desktop app (Tauri v2). Writing is stored
+as one plain Markdown file per entry in a folder the user picks, so the archive stays
+readable in any editor. Outside Tauri the app falls back to IndexedDB; that path exists
+only so `npm run dev` and the Playwright suite can run the UI in a plain browser.
 
 Three product rules the code enforces, not just aspires to: the user's writing is never
 rewritten, never lost, and never leaves the machine.
@@ -38,9 +38,7 @@ Before pushing: `npm run typecheck && npm test && npm run e2e`.
 ## Layout
 
 ```
-index.html          Marketing landing page (static, no React)
-app.html            The writing app, mounts src/main.tsx
-install.html        Install guide (static)
+app.html            The writing app, mounts src/main.tsx (the only page)
 src/
   components/       Canvas, BottomBar, HistorySidebar, CommandPalette
   editor/           CodeMirror 6: setup, theme, focus, hardcore
@@ -48,17 +46,15 @@ src/
   storage/          repository plus tauri and browser adapters
   model/            entry parsing, titles, word counts, search
   export/           pdf, docx, csv, json, txt, md, and the save dialog
-  styles/           app.css (the app), site.css (the two static pages), fonts.css
+  styles/           app.css, fonts.css
 src-tauri/          Rust shell, capabilities, bundler config
 tests/              vitest, pure functions only
 e2e/                playwright, real browser
-scripts/            seven standalone .mjs screenshot and audit scripts
+scripts/            standalone .mjs screenshot and audit scripts
 ```
 
-**Three HTML entry points, declared in `vite.config.ts`.** `index.html` is the marketing
-page, `app.html` is the product. Editing `index.html` to change the app is the single most
-likely wrong turn in this repo. `vercel.json` rewrites `/app` and `/install` onto their
-pages.
+**One HTML entry point, `app.html`, declared in `vite.config.ts`.** Tauri loads it by that
+name (`app.windows[0].url`), and the e2e suite opens it at `/app`.
 
 ## Architecture
 
@@ -88,8 +84,7 @@ TypeScript is strict, including `noUncheckedIndexedAccess`, so array access is
 possibly-undefined and must be handled. There is no ESLint and no Prettier. Match the style
 of the file you are editing rather than reformatting it.
 
-Prose has no em dashes: not in UI strings, landing page copy, install guide, or commit
-messages. Use commas, colons or full stops. (Code comments in `src/` predate the rule and
+Prose has no em dashes: not in UI strings or commit messages. Use commas, colons or full stops. (Code comments in `src/` predate the rule and
 are not worth churning.)
 
 Commit subjects say what changed in the imperative. Bodies explain the cause and the
@@ -113,9 +108,6 @@ anything.
 4173`. If you left a preview running on 4173, Playwright skips the rebuild and tests a
 stale bundle, so a fix appears to work when it was never built. Run `npm run build:only`
 yourself after every source change, or kill the stray server.
-
-`tests/vercel-config.test.ts` pins the deploy config. Changing routing or cache headers in
-`vercel.json` without updating it breaks `npm test`.
 
 ## Gotchas
 
@@ -158,9 +150,6 @@ storage fix worked.
 certificate. The release workflow gates the signing variables behind a job-level flag so
 they only exist when a certificate is really configured.
 
-**`vercel.json` rejects unknown keys**, including comment keys like `"//"`. The deploy fails
-at validation, not at runtime.
-
 **A font that is not installed measures exactly like the generic it falls back to.**
 `document.fonts.check` cannot tell you otherwise, since it accounts for fallback. Font
 availability in `src/state/settings.ts` is therefore measured on a canvas, and bundled
@@ -176,9 +165,8 @@ it a third time under `name = "blank"`.
 Cut a release by pushing a `v*` tag, or run the Release workflow manually with a tag input
 (it creates the tag). It builds one universal macOS binary on a macOS 15 runner with Xcode
 26 (needed by `actool` to compile the Liquid Glass icon `src-tauri/icons/Blank.icon`), and
-publishes a non-draft release. Draft release assets
-return 404 for anyone but the repo owner, which would break the download link on the landing
-page.
+publishes a non-draft release. Draft release assets return 404 for anyone but the repo
+owner, which would break every shared download link.
 
 Builds are unsigned unless signing secrets are configured, so first launch is blocked on
-macOS. `/install` documents the click-through.
+macOS: System Settings, Privacy & Security, Open Anyway.
