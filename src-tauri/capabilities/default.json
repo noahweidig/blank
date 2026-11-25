@@ -18,7 +18,6 @@
     "opener:allow-reveal-item-in-dir",
     "os:default",
     "store:default",
-    "clipboard-manager:allow-read-image",
     "dialog:allow-open",
     "dialog:allow-save",
     "dialog:allow-message",

@@ -5,11 +5,9 @@ import type { Extension, Range } from '@codemirror/state'
 /**
  * Makes `- [ ]` and `- [x]` markers clickable, and marks a finished item.
  *
- * Deliberately does NOT swap the marker for a rendered checkbox widget. The
- * editor's rule everywhere else is to fade markdown syntax rather than hide
- * it, because replacing characters shifts the text under the cursor as you
- * type past them. The marker stays exactly the three characters that are in
- * the file; it just becomes something you can hit.
+ * On the active line, and with live markdown off, the marker stays the three
+ * characters in the file and becomes something you can hit. Elsewhere
+ * livePreview() swaps it for a rendered checkbox.
  *
  * Nothing here is visible on a page with no task list, and both personas write
  * lists, so this is the one developer-shaped feature that is not really

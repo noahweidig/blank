@@ -2,6 +2,7 @@ import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
 import { EditorView } from '@codemirror/view'
 import { tags } from '@lezer/highlight'
 import { codeHighlight } from './code'
+import { livePreview } from './livepreview'
 import type { Extension } from '@codemirror/state'
 
 /**
@@ -65,9 +66,8 @@ export const editorTheme = EditorView.theme({
 
 /**
  * Live markdown. `processingInstruction` covers the syntax characters
- * themselves (`**`, `#`, `>`), which we fade rather than hide — hiding them
- * shifts text under the cursor as you type past a marker, which feels worse
- * than a grey asterisk looks.
+ * themselves (`**`, `#`, `>`). Off the active line livePreview() hides them;
+ * on it they show faded, so the line being typed never shifts.
  */
 const markdownHighlight = HighlightStyle.define([
   { tag: tags.processingInstruction, color: 'var(--blank-faint)' },
@@ -103,7 +103,7 @@ export function markdownStyling(): Extension {
   // Code colours ride with the markdown layer on purpose. Switching to the
   // plain canvas promises one uniform page, and a syntax-coloured block in
   // the middle of it would not be that.
-  return [syntaxHighlighting(markdownHighlight), syntaxHighlighting(codeHighlight)]
+  return [syntaxHighlighting(markdownHighlight), syntaxHighlighting(codeHighlight), livePreview()]
 }
 
 /**

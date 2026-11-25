@@ -1,7 +1,6 @@
 import { memo, useEffect, useRef } from 'react'
 import { createEditor, type EditorHandle } from '../editor/setup'
 import { useStore } from '../state/store'
-import { clipboardImage } from '../shell/clipboard'
 import { FONT_SIZES } from '../state/settings'
 
 /**
@@ -53,7 +52,6 @@ function CanvasImpl() {
         write: (bytes, name) => useStore.getState().saveImage(bytes, name),
         url: (href) => useStore.getState().imageUrl(href),
       },
-      clipboardImage,
       onChange: (text) => useStore.getState().setBody(text),
     })
     active = editor

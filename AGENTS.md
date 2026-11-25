@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Blank is a local-first, distraction-free freewriting app, modelled on Freewrite. One
-TypeScript codebase ships four surfaces: a desktop app (Tauri v2, macOS/Windows/Linux), a
+TypeScript codebase ships four surfaces: a desktop app (Tauri v2, macOS only), a
 web app, a marketing landing page and an install guide. Writing is stored as one plain
 Markdown file per entry in a folder the user picks, so the archive stays readable in any
 editor. The browser falls back to IndexedDB.
@@ -174,10 +174,11 @@ only; the Cargo files and `tauri.conf.json` are manual, and `src-tauri/Cargo.loc
 it a third time under `name = "blank"`.
 
 Cut a release by pushing a `v*` tag, or run the Release workflow manually with a tag input
-(it creates the tag). It builds all three platforms with `fail-fast: false` so one platform
-failing does not discard the others, and publishes a non-draft release. Draft release assets
+(it creates the tag). It builds one universal macOS binary on a macOS 15 runner with Xcode
+26 (needed by `actool` to compile the Liquid Glass icon `src-tauri/icons/Blank.icon`), and
+publishes a non-draft release. Draft release assets
 return 404 for anyone but the repo owner, which would break the download link on the landing
 page.
 
 Builds are unsigned unless signing secrets are configured, so first launch is blocked on
-macOS and Windows. `/install` documents the click-through.
+macOS. `/install` documents the click-through.

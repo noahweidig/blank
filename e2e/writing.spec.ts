@@ -74,13 +74,13 @@ test.describe('live markdown', () => {
     expect(Number(boldWeight)).toBeGreaterThanOrEqual(600)
     void strong
 
-    // ...and turning it off leaves the text itself untouched.
-    const before = await page.locator('.cm-content').evaluate(text())
+    // ...and turning it off shows the text exactly as stored, syntax included.
     await (await writingControl(page, 'Render markdown as you type')).click()
     await expect(await writingControl(page, 'Render markdown as you type')).toHaveText('Plain')
     await page.keyboard.press('Escape')
     const after = await page.locator('.cm-content').evaluate(text())
-    expect(after).toBe(before)
+    expect(after).toContain('# A heading')
+    expect(after).toContain('with **bold** text')
 
     const plainWeight = await page.evaluate(() => {
       const nodes = [...document.querySelectorAll('.cm-content span')]
@@ -617,20 +617,24 @@ test.describe('task lists', () => {
     await page.keyboard.type('Standup\n\n- [ ] chase the retry bug\nwrite the postmortem')
     await page.waitForTimeout(500)
 
-    await expect(page.locator('.cm-blank-task')).toHaveCount(2)
+    await expect(page.locator('.cm-blank-task')).toHaveCount(1)
+    await expect(page.locator('.cm-blank-checkbox')).toHaveCount(1)
     await expect(page.locator('.cm-blank-task-done')).toHaveCount(0)
 
-    await page.locator('.cm-blank-task').nth(1).click()
+    // The caret sits on the last item, so it shows the raw marker; the first
+    // item is off the active line and shows a rendered checkbox.
+    await page.locator('.cm-blank-task').click()
     await expect(page.locator('.cm-blank-task-done')).toHaveCount(1)
 
-    // The marker is not swapped for a widget: what is on screen is the three
-    // characters that are in the file, so ticking is a text edit.
-    await page.locator('.cm-blank-task').first().click()
+    await page.locator('.cm-blank-checkbox').first().click()
     await expect(page.locator('.cm-blank-task-done')).toHaveCount(2)
+    await page.keyboard.press('Control+a')
     await expect(page.locator('.cm-content')).toContainText('- [x] chase the retry bug')
 
-    await page.locator('.cm-blank-task').first().click()
+    await page.keyboard.press('End')
+    await page.locator('.cm-blank-checkbox').first().click()
     await expect(page.locator('.cm-blank-task-done')).toHaveCount(1)
+    await page.keyboard.press('Control+a')
     await expect(page.locator('.cm-content')).toContainText('- [ ] chase the retry bug')
   })
 
