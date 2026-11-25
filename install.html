@@ -6,7 +6,7 @@
     <title>Installing Blank</title>
     <meta
       name="description"
-      content="How to install Blank on macOS, Windows and Linux, including getting past the first-launch security warning."
+      content="How to install Blank on macOS, including getting past the first-launch security warning."
     />
     <meta name="theme-color" content="#fafaf9" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23fafaf9'/><rect x='9' y='9' width='2' height='14' fill='%231a1a1a'/><rect x='14' y='9' width='10' height='2' fill='%23dedede'/><rect x='14' y='14' width='7' height='2' fill='%23dedede'/></svg>" />
@@ -73,13 +73,11 @@
         <p class="crumb"><a href="/">Blank</a> / Installing</p>
         <h1>Installing Blank</h1>
         <p class="lede" style="margin-left:0">
-          Blank is not code-signed yet, so macOS and Windows block the first launch.
+          Blank is not code-signed yet, so macOS blocks the first launch.
           Nothing is wrong with the app. Here is the whole path through it, once.
         </p>
         <div class="platform-nav">
           <a href="#macos">macOS</a>
-          <a href="#windows">Windows</a>
-          <a href="#linux">Linux</a>
           <a href="https://github.com/realanshuman/blank/releases/latest">Downloads</a>
           <a href="/app">Use it in the browser instead</a>
         </div>
@@ -149,75 +147,14 @@
         </div>
       </section>
 
-      <section class="wrap" id="windows">
-        <h2 class="sec">Windows</h2>
-        <p class="sec-sub">
-          Take the <code>.msi</code> installer, or the <code>.exe</code> setup beside it.
-          Either one works.
-        </p>
-
-        <div class="steps">
-          <div class="step">
-            <h4>Run the installer</h4>
-            <p>Double-click the downloaded <code>.msi</code>.</p>
-          </div>
-          <div class="step">
-            <h4>Click More info</h4>
-            <p>
-              SmartScreen says it “protected your PC”. Click <b>More info</b>. The link
-              is easy to miss, and there is no other way forward.
-            </p>
-            <div class="shot">
-              <div class="shot-title">Windows protected your PC</div>
-              <div class="shot-body">Unrecognised app · Publisher: Unknown</div>
-              <div class="shot-row">
-                <span class="fake-btn go">More info</span>
-                <span class="fake-btn danger">Don't run</span>
-              </div>
-            </div>
-          </div>
-          <div class="step">
-            <h4>Run anyway</h4>
-            <p>Click <b>Run anyway</b>, then follow the installer.</p>
-          </div>
-          <div class="step">
-            <h4>Start writing</h4>
-            <p>Launch Blank from the Start menu and choose a folder for your writing.</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="wrap" id="linux">
-        <h2 class="sec">Linux</h2>
-        <p class="sec-sub">No security prompt here, just make it executable.</p>
-
-        <div class="steps">
-          <div class="step">
-            <h4>AppImage</h4>
-            <p>
-              <code>chmod +x Blank_*.AppImage</code> then run it. Works on most
-              distributions with no install.
-            </p>
-          </div>
-          <div class="step">
-            <h4>Debian / Ubuntu</h4>
-            <p>
-              <code>sudo apt install ./Blank_*.deb</code> installs it like any other
-              package.
-            </p>
-          </div>
-        </div>
-      </section>
-
       <section class="wrap">
         <h2 class="sec">Questions</h2>
 
         <div class="faq narrow">
           <h4>Why is it not signed?</h4>
           <p>
-            Signing requires a paid Apple Developer account, and Windows code signing
-            costs more again. Neither changes the app, only whether your system
-            recognises the publisher. It may be signed later.
+            Signing requires a paid Apple Developer account. It does not change the
+            app, only whether macOS recognises the publisher. It may be signed later.
           </p>
 
           <h4>Is there a terminal shortcut on macOS?</h4>
@@ -241,8 +178,7 @@
 
           <h4>How do I uninstall it?</h4>
           <p>
-            Drag Blank from Applications to the Bin on macOS, or use Add or remove
-            programs on Windows. Your writing folder is untouched. The files are yours.
+            Drag Blank from Applications to the Bin. Your writing folder is untouched. The files are yours.
           </p>
         </div>
       </section>

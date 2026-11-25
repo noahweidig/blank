@@ -1614,3 +1614,61 @@ span.bar__phone-hide {
     display: none !important;
   }
 }
+
+/*
+ * Live preview widgets (src/editor/livepreview.ts). Sized in em so they track
+ * the user's font size.
+ */
+.cm-blank-bullet {
+  display: inline-block;
+  width: 1.1em;
+  color: var(--blank-muted);
+  text-align: center;
+}
+
+.cm-blank-ol {
+  color: var(--blank-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.cm-blank-checkbox {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 1em;
+  height: 1em;
+  margin: 0 0.4em 0 0.05em;
+  vertical-align: -0.14em;
+  border: 1.5px solid var(--blank-faint);
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+}
+
+.cm-blank-checkbox.is-checked {
+  background: var(--blank-accent);
+  border-color: var(--blank-accent);
+}
+
+.cm-blank-checkbox.is-checked::after {
+  content: '';
+  position: absolute;
+  left: 34%;
+  top: 16%;
+  width: 24%;
+  height: 46%;
+  border: solid #fff;
+  border-width: 0 0.12em 0.12em 0;
+  transform: rotate(45deg);
+}
+
+.cm-line.cm-blank-quote {
+  border-left: 3px solid var(--blank-faint);
+  padding-left: 0.9em !important;
+}
+
+.cm-blank-hr {
+  display: inline-block;
+  width: 100%;
+  vertical-align: middle;
+  border-top: 1px solid var(--blank-faint);
+}

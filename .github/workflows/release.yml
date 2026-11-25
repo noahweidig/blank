@@ -28,28 +28,10 @@ concurrency:
 
 jobs:
   build:
-    strategy:
-      # One platform failing should not throw away binaries that did build.
-      fail-fast: false
-      matrix:
-        include:
-          # Universal binary covers both Apple Silicon and Intel Macs in one
-          # .app, so there is only one download for users to choose from.
-          - platform: macos-14
-            target: universal-apple-darwin
-            label: macOS
-          - platform: windows-latest
-            target: ''
-            label: Windows
-          # Built on the oldest supported Ubuntu on purpose: glibc is forward
-          # compatible but not backward, so a 24.04 binary will not start on
-          # 22.04 while this one runs on both.
-          - platform: ubuntu-22.04
-            target: ''
-            label: Linux
-
-    runs-on: ${{ matrix.platform }}
-    name: ${{ matrix.label }}
+    # Universal binary covers both Apple Silicon and Intel Macs in one .app,
+    # so there is only one download for users to choose from.
+    runs-on: macos-15
+    name: macOS
 
     env:
       # Signing is enabled only when a certificate actually exists. See the
@@ -59,20 +41,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Linux build dependencies
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            libsoup-3.0-dev \
-            libappindicator3-dev \
-            librsvg2-dev \
-            libxdo-dev \
-            libssl-dev \
-            patchelf \
-            build-essential \
-            pkg-config
+      # Compiling the Liquid Glass icon (icons/Blank.icon) needs actool from
+      # Xcode 26; older Xcodes fail the bundle step.
+      - name: Select Xcode 26
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
 
       - uses: actions/setup-node@v4
         with:
@@ -83,7 +55,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           # Both targets are required for the universal macOS binary.
-          targets: ${{ matrix.target == 'universal-apple-darwin' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
 
       # Rust builds are slow from cold; this takes repeat runs from ~15 min to
       # a few minutes.
@@ -91,7 +63,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
-          key: ${{ matrix.platform }}-${{ matrix.target }}
+          key: macos-15-universal-apple-darwin
 
       - run: npm ci
 
@@ -108,7 +80,7 @@ jobs:
       # genuinely configured, which is why they are written here rather than
       # passed unconditionally in the build step's env block.
       - name: Enable Apple code signing
-        if: matrix.platform == 'macos-14' && env.HAS_APPLE_CERT == 'true'
+        if: env.HAS_APPLE_CERT == 'true'
         run: |
           {
             echo "APPLE_CERTIFICATE<<__EOF__"
@@ -129,21 +101,13 @@ jobs:
           tagName: ${{ github.event.inputs.tag || github.ref_name }}
           releaseName: 'Blank __VERSION__'
           releaseBody: |
-            Download the file for your platform below.
-
-            - **macOS** — `.dmg`. Works on both Apple Silicon and Intel.
-            - **Windows** — `.msi` or the `.exe` setup.
-            - **Linux** — `.AppImage` or `.deb`.
+            Download the `.dmg` below. Works on both Apple Silicon and Intel.
 
             These builds are unsigned unless signing secrets are configured, so
-            the first launch is blocked. This is expected.
-
-            **macOS** — click **Done** (not "Move to Bin"), then open
+            the first launch is blocked. This is expected. Click **Done** (not "Move to Bin"), then open
             **System Settings → Privacy & Security**, scroll to Security and click
             **Open Anyway** next to Blank. Once only. Note the older
             right-click → Open trick no longer works on macOS 15 and later.
-
-            **Windows** — click **More info → Run anyway**.
           # Published, not draft: a draft release's assets 404 for anyone who is
           # not the repo owner, which would break the download link on the site.
           releaseDraft: false
@@ -151,4 +115,4 @@ jobs:
           # that is what the landing page's download button resolves to, so
           # every visitor would get the experimental one.
           prerelease: ${{ github.event.inputs.prerelease == 'true' }}
-          args: ${{ matrix.target != '' && format('--target {0}', matrix.target) || '' }}
+          args: --target universal-apple-darwin

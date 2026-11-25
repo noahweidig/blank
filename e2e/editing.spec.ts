@@ -17,19 +17,18 @@ async function freshApp(page: Page) {
   await page.locator('.cm-content').click()
 }
 
-/** The document as the editor holds it, blank lines included. */
+/**
+ * The document as the editor holds it, blank lines included. Read from the
+ * state rather than the DOM: live preview hides syntax on inactive lines.
+ */
 function docText(page: Page) {
-  return page.evaluate(() =>
-    [...document.querySelectorAll('.cm-line')]
-      .map((line) => {
-        // A code block's Copy button is a widget living inside the line, so it
-        // lands in textContent without being anywhere in the document.
-        const clone = line.cloneNode(true) as HTMLElement
-        clone.querySelectorAll('.cm-blank-copy').forEach((node) => node.remove())
-        return clone.textContent ?? ''
-      })
-      .join('\n'),
-  )
+  return page.evaluate(() => {
+    // Same lookup as EditorView.findFromDOM, which is not reachable from here.
+    const content = document.querySelector('.cm-content') as
+      | (HTMLElement & { cmTile?: { root?: { view?: { state: { doc: { toString(): string } } } } } })
+      | null
+    return content?.cmTile?.root?.view?.state.doc.toString() ?? ''
+  })
 }
 
 /** Drops one file on the canvas the way a real drag does. */

@@ -1,15 +1,6 @@
 import { EditorView } from '@codemirror/view'
-import { Facet, type Extension } from '@codemirror/state'
+import type { Extension } from '@codemirror/state'
 import { assetGateway } from './image'
-
-/**
- * Reads an image straight off the OS clipboard, for the one engine that will
- * not put it in the paste event. Null anywhere that does not need it.
- */
-export const clipboardImageReader = Facet.define<
-  (() => Promise<File | null>) | null,
-  (() => Promise<File | null>) | null
->({ combine: (values) => values[0] ?? null })
 
 /**
  * Takes images into the writing, and refuses everything else that is not text.
@@ -129,22 +120,7 @@ export function fileDrop(): Extension {
         void insertImages(view, files, view.state.selection.main.head)
         return true
       }
-
-      /*
-       * Nothing in the event. On WebKitGTK that is what a pasted image looks
-       * like, so ask the OS clipboard directly. Only when the clipboard holds
-       * no text as well, or this would swallow an ordinary text paste.
-       */
-      const reader = view.state.facet(clipboardImageReader)
-      if (!reader) return false
-      if (event.clipboardData?.getData('text/plain')) return false
-
-      event.preventDefault()
-      const at = view.state.selection.main.head
-      void reader().then((file) => {
-        if (file) void insertImages(view, [file], at)
-      })
-      return true
+      return false
     },
 
     drop(event, view) {

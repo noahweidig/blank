@@ -22,25 +22,16 @@ test.describe('landing page', () => {
     const page = await context.newPage()
     await page.goto('/')
     const button = page.locator('#download')
-    await expect(button).toHaveText('Download')
+    await expect(button).toHaveText('Download for Mac')
     await expect(button).toHaveAttribute('href', /github\.com\/.+\/releases\/latest/)
     await context.close()
   })
 
-  test('names the platform when JavaScript runs', async ({ page }) => {
+  test('offers the Mac download only', async ({ page }) => {
     await page.goto('/')
-    // The test browser reports Linux.
-    await expect(page.locator('#download')).toHaveText(/Download for (Mac|Windows|Linux)/)
-  })
-
-  test('offers a download for every desktop platform', async ({ page }) => {
-    await page.goto('/')
-    // Scoped to the downloads section: the hero button is renamed by the
-    // platform script and would otherwise match one of these too.
     const section = page.locator('#download-section')
-    for (const name of ['Download for Mac', 'Download for Windows', 'Download for Linux']) {
-      await expect(section.getByRole('link', { name, exact: true })).toBeVisible()
-    }
+    await expect(section.getByRole('link', { name: 'Download for Mac', exact: true })).toBeVisible()
+    await expect(section).not.toContainText(/Windows|Linux/)
   })
 
   test('points at the install guide instead of explaining it inline', async ({ page }) => {

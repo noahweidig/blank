@@ -4,7 +4,7 @@ A blank canvas for freewriting. Open it and write — no toolbars, no sidebars i
 your way, no formatting decisions. Everything you write is saved locally, as
 plain Markdown you can read without this app.
 
-Inspired by [Freewrite](https://freewrite.io), rebuilt to run on macOS, Windows
+Inspired by [Freewrite](https://freewrite.io), rebuilt to run on macOS
 and iOS from one codebase, and to fix the things the original leaves out:
 searching your own archive, tagging it, knowing whether you actually wrote
 today, and never losing a draft.
@@ -51,7 +51,7 @@ today, and never losing a draft.
 **Everywhere**
 
 - Runs in any browser today, and deploys as a static site (see below).
-- Native macOS, Windows and iOS builds via Tauri, and PWA install — both still
+- Native macOS and iOS builds via Tauri, and PWA install — both still
   to come; see Status.
 
 ---
@@ -186,9 +186,8 @@ is the marketing landing page, which only makes sense on the web.
 
 ## Releasing installers automatically
 
-`.github/workflows/release.yml` builds macOS, Windows and Linux installers in
-parallel on GitHub's runners, so you never have to build by hand — and you get
-a Windows build without owning a Windows machine.
+`.github/workflows/release.yml` builds the macOS installer on
+GitHub's runners, so you never have to build by hand.
 
 **Cut a release:**
 
@@ -205,12 +204,9 @@ anyone can download them — containing:
 | Platform | Artifact | Notes |
 |---|---|---|
 | macOS | `.dmg` | Universal: one download for Apple Silicon and Intel |
-| Windows | `.msi` and `.exe` | |
-| Linux | `.AppImage` and `.deb` | Built on Ubuntu 22.04 so it runs on 22.04 and newer |
 
 Typecheck and unit tests run before the (slow) Rust compile, so a broken web
-layer fails in about a minute instead of fifteen. Rust builds are cached, and
-one platform failing does not discard the others' binaries.
+layer fails in about a minute instead of fifteen. Rust builds are cached.
 
 `.github/workflows/rust.yml` separately runs `cargo fmt`, `clippy -D warnings`
 and `cargo check` whenever `src-tauri/` changes, so shell breakage surfaces on
@@ -219,7 +215,7 @@ push rather than at release time.
 ### Code signing (optional)
 
 Builds work unsigned — users get a one-time block (macOS: **System Settings →
-Privacy & Security → Open Anyway**; Windows: **More info → Run anyway**). To
+Privacy & Security → Open Anyway**). To
 remove it, add these under Settings → Secrets and variables → Actions:
 
 | Secret | For |
@@ -310,17 +306,10 @@ Still to come:
 - **Phase 2** — Tauri desktop shell — **done, pending a build on a Mac.** The
   Rust crate, config, capabilities and the filesystem storage adapter are all
   written and `cargo check` passes; what remains is running `npm run tauri:build`
-  on macOS/Windows, plus external-change watching and native menus.
+  on macOS, plus external-change watching and native menus.
 - **Phase 3** — SQLite full-text index, a version-history timeline with diffs,
   and bulk export in a worker.
 - **Phase 4** — iOS, and PWA offline polish.
 
-Building the native shell needs `webkit2gtk` on Linux:
-
-```bash
-sudo apt-get install libwebkit2gtk-4.1-dev libsoup-3.0-dev libxdo-dev \
-  libssl-dev libayatana-appindicator3-dev librsvg2-dev
-```
-
-macOS, Windows and iOS binaries are built on those platforms (or in CI), not on
-Linux.
+The desktop app is macOS only. macOS and iOS binaries are built on a Mac (or in
+CI). The Liquid Glass icon needs Xcode 26.

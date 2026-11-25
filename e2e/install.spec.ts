@@ -7,11 +7,10 @@ test.describe('install guide', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Installing Blank')
   })
 
-  test('covers every platform we ship', async ({ page }) => {
+  test('covers macOS only', async ({ page }) => {
     await page.goto('/install')
-    for (const id of ['macos', 'windows', 'linux']) {
-      await expect(page.locator(`#${id}`)).toBeVisible()
-    }
+    await expect(page.locator('#macos')).toBeVisible()
+    await expect(page.locator('main')).not.toContainText(/Windows|Linux/)
   })
 
   test('walks through the macOS first-launch block', async ({ page }) => {
@@ -33,13 +32,6 @@ test.describe('install guide', () => {
     // in macOS 15, and the old advice points at the button that deletes the app.
     const notice = await page.locator('#macos .notice').innerText()
     expect(notice).toMatch(/right-click[^.]*no longer works/i)
-  })
-
-  test('explains the Windows SmartScreen prompt', async ({ page }) => {
-    await page.goto('/install')
-    const windows = await page.locator('#windows').innerText()
-    expect(windows).toContain('More info')
-    expect(windows).toContain('Run anyway')
   })
 
   test('offers the browser as a no-install option', async ({ page }) => {
