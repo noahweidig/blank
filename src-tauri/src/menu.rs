@@ -56,6 +56,7 @@ pub fn build<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
 
     let file = SubmenuBuilder::new(app, "File")
         .item(&item("new", "New Entry", Some("CmdOrCtrl+N"))?)
+        .item(&item("save", "Save", Some("CmdOrCtrl+S"))?)
         .separator()
         .item(&item(
             "export-pdf",
@@ -82,9 +83,13 @@ pub fn build<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
         .item(&PredefinedMenuItem::select_all(app, None)?)
         .separator()
         .item(&item("find", "Find…", Some("CmdOrCtrl+F"))?)
+        .item(&item("palette", "Command Palette…", Some("CmdOrCtrl+K"))?)
         .build()?;
 
     let format = SubmenuBuilder::new(app, "Format")
+        .item(&item("bold", "Bold", Some("CmdOrCtrl+B"))?)
+        .item(&item("italic", "Italic", Some("CmdOrCtrl+I"))?)
+        .separator()
         .item(&item("size-up", "Bigger", Some("CmdOrCtrl+Plus"))?)
         .item(&item("size-down", "Smaller", Some("CmdOrCtrl+-"))?)
         .separator()

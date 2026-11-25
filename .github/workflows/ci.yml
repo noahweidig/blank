@@ -1,9 +1,13 @@
 name: CI
 
+# The web layer's checks. Docs and the Rust shell (which has its own
+# workflow) do not touch anything these run.
 on:
   push:
     branches: ['**']
+    paths-ignore: ['**.md', 'src-tauri/**', '.github/workflows/rust.yml', '.github/workflows/release.yml']
   pull_request:
+    paths-ignore: ['**.md', 'src-tauri/**', '.github/workflows/rust.yml', '.github/workflows/release.yml']
 
 jobs:
   test:

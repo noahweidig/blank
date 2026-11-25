@@ -297,111 +297,6 @@ test.describe('the focus session', () => {
   })
 })
 
-test.describe('the display faces', () => {
-  test('are bundled, not names that quietly fall back', async ({ page }) => {
-    await freshApp(page)
-    await page.getByTitle('Choose a typeface').click()
-
-    // Read the names out of the menu rather than restating them here: the
-    // point is that what the picker offers is what the app can actually draw.
-    const families: string[] = []
-    for (const section of await page.locator('.bar__menu-section').all()) {
-      await section.locator('.bar__menu-group').click()
-      families.push(...(await section.locator('.bar__menu-item').allTextContents()))
-    }
-    expect(families).toHaveLength(50)
-
-    // load() resolves with the FontFace objects our own @font-face rules
-    // declared, so an empty array means that name has no face behind it and
-    // the entry would render as its fallback. document.fonts.check cannot be
-    // used for this: it accounts for fallback and answers true either way.
-    const unbacked = await page.evaluate(async (names) => {
-      const missing: string[] = []
-      for (const family of names) {
-        const faces = await document.fonts.load(`72px "${family}"`)
-        if (faces.length === 0) missing.push(family)
-      }
-      return missing
-    }, families)
-
-    expect(unbacked).toEqual([])
-  })
-
-  test('start folded away, and one reaches the page when picked', async ({ page }) => {
-    await freshApp(page)
-    await page.keyboard.type('The room goes quiet when the clock starts.')
-    await page.getByTitle('Choose a typeface').click()
-
-    // Fifty specimens unfurled is a wall, and rendering them all is what pulls
-    // every face over the network at once. Shut until asked.
-    const sections = page.locator('.bar__menu-section')
-    await expect(sections).toHaveCount(7)
-    const before = await page.locator('.bar__menu-item').count()
-
-    const horror = sections.filter({ has: page.getByTitle('Horror typefaces') })
-    await horror.locator('.bar__menu-group').click()
-    expect(await page.locator('.bar__menu-item').count()).toBe(before + 5)
-
-    await page.getByTitle('Creepster').click()
-    await expect(page.getByTitle('Choose a typeface')).toHaveText('Creepster')
-    await expect(page.locator('.cm-content')).toHaveCSS('font-family', /Creepster/)
-  })
-
-  test('do not stretch the bar with their long names', async ({ page }) => {
-    await freshApp(page)
-    await page.getByTitle('Choose a typeface').click()
-    const oldWorld = page
-      .locator('.bar__menu-section')
-      .filter({ has: page.getByTitle('Old world typefaces') })
-    await oldWorld.locator('.bar__menu-group').click()
-    await page.getByTitle('UnifrakturMaguntia').click()
-
-    // The trigger shows the name of the chosen face, and these names are much
-    // longer than "Lato". Uncapped, the bar's left half grows until its right
-    // half is pushed out of the window, which is the clipping the width test
-    // above already guards against for a different cause.
-    for (const width of [1440, 1100, 900, 760]) {
-      await page.setViewportSize({ width, height: 700 })
-      await page.waitForTimeout(200)
-      const clipped = await page
-        .locator('.bar')
-        .evaluate((bar) => bar.scrollWidth > bar.clientWidth + 1)
-      expect(clipped, `bar clipped at ${width}px`).toBe(false)
-      await expect(page.getByTitle('Toggle history')).toBeInViewport()
-    }
-  })
-
-  test('are never what Surprise me hands you', async ({ page }) => {
-    await freshApp(page)
-
-    // Unfold every group first, and not for convenience: that is what pulls
-    // the faces over the network. Random keeps only the families it can
-    // measure as present, so an unloaded webfont is indistinguishable from an
-    // uninstalled one and drops out on its own. Draw before opening the menu
-    // and the pool looks clean whether or not the boundary exists.
-    await page.getByTitle('Choose a typeface').click()
-    const display: string[] = []
-    for (const section of await page.locator('.bar__menu-section').all()) {
-      await section.locator('.bar__menu-group').click()
-      display.push(...(await section.locator('.bar__menu-item').allTextContents()))
-    }
-    expect(display).toHaveLength(50)
-    await page.keyboard.press('Escape')
-
-    // Random is a "give me a different page to write on" button. Nobody 300
-    // words into a journal entry wants Nosifer.
-    const drawn = new Set<string>()
-    for (let draw = 0; draw < 25; draw += 1) {
-      await page.getByTitle('Choose a typeface').click()
-      await page.getByRole('button', { name: 'Surprise me' }).click()
-      drawn.add((await page.getByTitle('Choose a typeface').textContent()) ?? '')
-    }
-
-    expect(drawn.size, 'Random never moved').toBeGreaterThan(1)
-    expect([...drawn].filter((name) => display.includes(name))).toEqual([])
-  })
-})
-
 test.describe('the Mac shell', () => {
   test('reserves the title bar band only where there is a title bar to dodge', async ({ page }) => {
     await freshApp(page)
@@ -545,70 +440,6 @@ test.describe('persistence', () => {
   })
 })
 
-test.describe('code blocks', () => {
-  test('stay completely absent until the writing asks for one', async ({ page }) => {
-    await freshApp(page)
-    await page.keyboard.type('Just prose. Nothing here is code, not even `this`.')
-    await page.waitForTimeout(400)
-
-    // The whole design rule for the developer features: someone writing prose
-    // never meets them.
-    await expect(page.locator('.cm-blank-code')).toHaveCount(0)
-  })
-
-  test('become monospace and syntax coloured on a fenced block', async ({ page }) => {
-    await freshApp(page)
-    await page.keyboard.type('Notes.\n\n```ts\n')
-    await page.keyboard.type('// swallowed it\nconst ok = await retry(3)\n')
-    // The grammar is fetched on demand, so the colour arrives after a reparse.
-    await page.waitForTimeout(1500)
-
-    await expect(page.locator('.cm-blank-code').first()).toBeVisible()
-
-    const shades = await page.evaluate(() => {
-      const found: Record<string, string> = {}
-      for (const span of document.querySelectorAll('.cm-line span')) {
-        const label = (span.textContent ?? '').trim()
-        if (label.startsWith('//')) found['comment'] = getComputedStyle(span).color
-        if (label === 'const') found['keyword'] = getComputedStyle(span).color
-      }
-      const line = document.querySelector('.cm-line')
-      found['body'] = line ? getComputedStyle(line).color : ''
-      const block = document.querySelector('.cm-blank-code')
-      found['font'] = block ? getComputedStyle(block).fontFamily : ''
-      return found
-    })
-
-    // Keyword and comment must each differ from body text, or the grammar
-    // never loaded and this is just plain text on a grey ground.
-    expect(shades['keyword']).toBeTruthy()
-    expect(shades['keyword']).not.toBe(shades['body'])
-    expect(shades['comment']).not.toBe(shades['body'])
-    expect(shades['font']).toMatch(/mono/i)
-  })
-})
-
-test.describe('code blocks', () => {
-  test('copy a block without its fences', async ({ page, context }) => {
-    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
-    await freshApp(page)
-    await page.keyboard.type('Notes.\n\n```ts\nconst ok = await retry(3)\nreturn ok\n')
-    await page.waitForTimeout(1500)
-
-    await expect(page.locator('.cm-blank-copy')).toHaveCount(1)
-    await page.locator('.cm-blank-copy').click()
-    await expect(page.locator('.cm-blank-copy')).toHaveText('Copied')
-
-    // The fence line itself must not come along: nobody wants ```ts pasted
-    // into a terminal.
-    // The trailing Enter now lands inside a closed block, so the block really
-    // does end on a blank line. Before fences balanced themselves this one ran
-    // to the end of the document and had nothing after it to pick up.
-    const clipboard = await page.evaluate(() => navigator.clipboard.readText())
-    expect(clipboard).toBe('const ok = await retry(3)\nreturn ok\n')
-  })
-})
-
 test.describe('task lists', () => {
   test('tick and untick from the marker, rewriting the file', async ({ page }) => {
     await freshApp(page)
@@ -638,19 +469,6 @@ test.describe('task lists', () => {
     await expect(page.locator('.cm-content')).toContainText('- [ ] chase the retry bug')
   })
 
-  test('do not borrow the code palette', async ({ page }) => {
-    await freshApp(page)
-    await page.keyboard.type('- [ ] a plain task\n')
-    await page.waitForTimeout(400)
-
-    // Markdown tokenises the marker as an atom, the same tag a language uses
-    // for a literal, so a careless code palette paints prose with code colours.
-    const marker = await page
-      .locator('.cm-blank-task')
-      .first()
-      .evaluate((node) => getComputedStyle(node).color)
-    expect(marker).not.toBe('rgb(168, 86, 10)')
-  })
 })
 
 test.describe('the history sidebar', () => {

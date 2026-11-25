@@ -1,4 +1,3 @@
-@import './fonts.css';
 
 /* ---------------------------------------------------------------------------
    Theme tokens. Every colour in the app resolves through these, so adding a
@@ -13,15 +12,14 @@
    --------------------------------------------------------------------------- */
 
 :root {
-  --blank-font: 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --blank-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --blank-font: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --blank-mono: ui-monospace, 'SF Mono', Menlo, monospace;
   --blank-font-size: 18px;
   --blank-line-height: 1.6;
   --blank-measure: 700px;
   --blank-scroll-padding: 45vh;
 
-  --blank-ui-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
-    sans-serif;
+  --blank-ui-font: -apple-system, BlinkMacSystemFont, sans-serif;
   --blank-ui-size: 13px;
   /* The bar carries the only always-on text in the app, so it is a step
      larger than the rest of the chrome. */
@@ -32,7 +30,6 @@
 
   /* Set from JS on devices whose on-screen keyboard shrinks the visual
      viewport, so the bottom bar rides above the keyboard instead of under it. */
-  --blank-keyboard-inset: 0px;
 }
 
 :root[data-theme='light'] {
@@ -51,12 +48,6 @@
   --blank-panel-hover: #f0f0f0;
   --blank-panel-active: #e9e9e9;
   --blank-danger: #b13c2e;
-  --blank-code-comment: #8a8a8a;
-  --blank-code-keyword: #8b3fbf;
-  --blank-code-string: #1a7f4a;
-  --blank-code-number: #a8560a;
-  --blank-code-name: #1f5fbf;
-  --blank-code-attr: #7a4bbd;
 }
 
 :root[data-theme='dark'] {
@@ -75,12 +66,6 @@
   --blank-panel-hover: #23232a;
   --blank-panel-active: #2a2a32;
   --blank-danger: #e0655a;
-  --blank-code-comment: #6f6f79;
-  --blank-code-keyword: #c99ae8;
-  --blank-code-string: #7fc99a;
-  --blank-code-number: #e0a86a;
-  --blank-code-name: #85b4e8;
-  --blank-code-attr: #b9a3e8;
 }
 
 /*
@@ -105,12 +90,6 @@
   --blank-panel-hover: #171717;
   --blank-panel-active: #202020;
   --blank-danger: #e0655a;
-  --blank-code-comment: #6a6a6a;
-  --blank-code-keyword: #cb9df0;
-  --blank-code-string: #82cf9d;
-  --blank-code-number: #e5ac6d;
-  --blank-code-name: #88b8ef;
-  --blank-code-attr: #bda7ef;
 }
 
 :root[data-theme='sepia'] {
@@ -129,12 +108,6 @@
   --blank-panel-hover: #e9e0ce;
   --blank-panel-active: #e2d8c4;
   --blank-danger: #a63d2a;
-  --blank-code-comment: #9c8f7a;
-  --blank-code-keyword: #8a4a86;
-  --blank-code-string: #4a7a45;
-  --blank-code-number: #9a5b2c;
-  --blank-code-name: #3f6a94;
-  --blank-code-attr: #7a5090;
 }
 
 * {
@@ -280,56 +253,6 @@ button {
 }
 
 /*
- * Fenced code blocks. Present only when the writing contains one, which is the
- * rule for every developer-facing thing here: nothing in the interface
- * advertises code until the text asks for it.
- */
-.cm-blank-code {
-  font-family: var(--blank-mono);
-  font-size: 0.9em;
-  background: var(--blank-code-bg);
-  padding-left: 12px;
-  padding-right: 12px;
-}
-
-.cm-blank-code-open {
-  border-radius: 6px 6px 0 0;
-  padding-top: 6px;
-  /* Anchors the copy control to this line's right edge. */
-  position: relative;
-}
-
-.cm-blank-copy {
-  position: absolute;
-  right: 8px;
-  top: 5px;
-  padding: 2px 7px;
-  border-radius: 5px;
-  font-family: var(--blank-ui-font);
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--blank-faint);
-  background: var(--blank-code-bg);
-  transition: color 120ms ease, background-color 120ms ease;
-}
-
-.cm-blank-code-open:hover .cm-blank-copy,
-.cm-blank-copy:hover,
-.cm-blank-copy:focus-visible {
-  color: var(--blank-fg);
-  background: var(--blank-panel-active);
-}
-
-.cm-blank-copy.is-done {
-  color: var(--blank-fg);
-}
-
-.cm-blank-code-close {
-  border-radius: 0 0 6px 6px;
-  padding-bottom: 6px;
-}
-
-/*
  * Task list markers. The three characters stay exactly as they are in the
  * file; they simply become a target. A finished line recedes rather than being
  * struck through, which stays readable when a list is mostly done.
@@ -357,7 +280,6 @@ button {
 .bar {
   flex: 0 0 auto;
   min-height: var(--blank-bar-height);
-  margin-bottom: var(--blank-keyboard-inset);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -601,15 +523,6 @@ button {
   opacity: 1;
 }
 
-/* A finger needs a bigger target, and has no hover to reveal it with. */
-@media (pointer: coarse) {
-  .cm-blank-image-grip {
-    width: 30px;
-    height: 30px;
-    opacity: 1;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .cm-blank-image-grip,
   .cm-blank-image-size {
@@ -816,7 +729,7 @@ button {
    the whole bar shuffling sideways every time. */
 .bar__btn--wide {
   min-width: 62px;
-  /* And a ceiling, because the label is now sometimes "UnifrakturMaguntia".
+  /* And a ceiling, because the label is sometimes "American Typewriter".
      Unbounded, a long name grows the bar's left half until the right half is
      pushed out of the window. */
   max-width: 124px;
@@ -829,7 +742,7 @@ button {
 /*
  * Tighter again where the docked sidebar takes 260px off the bar. "Lato" fits
  * at every width down to the phone breakpoint; "American Typewriter" and
- * "UnifrakturMaguntia" run 42px past the window at 760px and push History out
+ * long names run past the window at 760px and push History out
  * of reach. The label is the cheapest thing to give up: the control stays put,
  * and the full name is still on its tooltip and in the open menu.
  *
@@ -839,7 +752,8 @@ button {
  */
 @media (max-width: 1000px) and (min-width: 721px) {
   .bar__btn--wide {
-    max-width: 62px;
+    /* 68 rather than 62: "System", the default, measures 63px. */
+    max-width: 68px;
   }
 }
 
@@ -1430,105 +1344,6 @@ button.sidebar__path--link:focus-visible .sidebar__path-arrow {
   opacity: 0.92;
 }
 
-/* ---------------------------------------------------------------------------
-   Phones and small tablets.
-
-   The desktop layout puts a fixed 260px sidebar beside the canvas. At phone
-   width that leaves no room to write, and as an absolutely positioned panel it
-   covered the canvas and swallowed taps. It becomes a proper off-canvas sheet
-   with a backdrop instead.
-   --------------------------------------------------------------------------- */
-
-@media (max-width: 720px) {
-  .sidebar {
-    position: fixed;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    z-index: 30;
-    width: min(86vw, 340px);
-    flex-basis: auto;
-    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.22);
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-
-    /* Fixed and over the canvas here, so it travels on a transform rather
-       than a margin. Nothing below it moves. */
-    margin-right: 0;
-    transform: translateX(100%);
-    transition: transform 200ms cubic-bezier(0.22, 0.61, 0.36, 1),
-      visibility 0s linear 200ms;
-  }
-
-  .sidebar.is-open {
-    margin-right: 0;
-    transform: none;
-    transition: transform 200ms cubic-bezier(0.22, 0.61, 0.36, 1), visibility 0s;
-  }
-
-  .sidebar__backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 29;
-    background: rgba(0, 0, 0, 0.32);
-    border: 0;
-    display: block;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 200ms ease, visibility 0s linear 200ms;
-  }
-
-  .sidebar__backdrop.is-open {
-    opacity: 1;
-    visibility: visible;
-    transition: opacity 200ms ease, visibility 0s;
-  }
-
-  /* Comfortable one-handed targets. */
-  .sidebar__search {
-    font-size: 16px; /* under 16px iOS zooms the whole page on focus */
-    min-height: 44px;
-  }
-  .entry {
-    padding: 12px 16px;
-  }
-  .entry__title {
-    font-size: 15px;
-  }
-  .entry__meta,
-  .entry__snippet {
-    font-size: 12px;
-  }
-
-  .canvas {
-    padding-top: 20px;
-  }
-  .canvas .cm-scroller {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
-
-  .bar {
-    font-size: 14px;
-    padding: 0 10px env(safe-area-inset-bottom);
-    gap: 6px;
-    /* Always legible on a phone: there is no pointer to reveal it on hover. */
-    opacity: 1;
-  }
-
-  .bar__btn {
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
-    padding: 0 10px;
-  }
-
-  /* The separators are desktop density; at touch size they only add clutter. */
-  .bar__sep {
-    display: none;
-  }
-}
-
 /*
  * The bar carries fifteen controls on desktop. A phone has room only for what
  * is used while actually writing; the rest stay in the command palette.
@@ -1541,68 +1356,9 @@ span.bar__phone-hide {
   display: contents;
 }
 
-@media (max-width: 720px) {
-  span.bar__phone-hide,
-  .bar__group.bar__phone-hide {
-    display: none;
-  }
-}
-
 @media (min-width: 721px) {
   span.bar__phone-only {
     display: none;
-  }
-}
-
-/*
- * Any touch device, not just phones. A tablet is finger-driven at 768px or
- * 1024px just as much as a phone is at 390px, so the sizing follows the input
- * method rather than the width.
- */
-@media (hover: none) {
-  .bar__btn {
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
-    padding: 0 8px;
-  }
-
-  .sidebar__search {
-    font-size: 16px; /* below 16px iOS zooms the page on focus */
-    min-height: 44px;
-  }
-
-  .entry {
-    padding: 12px 14px;
-  }
-
-  /* No hover on touch: the open row carries its actions instead. */
-  .entry.is-current .entry__actions {
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-  }
-  .entry.is-current .entry__title {
-    padding-right: 74px;
-  }
-  .entry__action {
-    width: 34px;
-    height: 34px;
-  }
-
-  /* Hover styling sticks after a tap, so express the feedback on :active. */
-  .bar__btn:hover {
-    color: var(--blank-faint);
-    background: none;
-  }
-  .bar__btn:active {
-    color: var(--blank-fg);
-    background: var(--blank-panel-hover);
-  }
-
-  /* Nothing reveals the bar on hover, so it must always be legible. */
-  .bar {
-    opacity: 1;
   }
 }
 
@@ -1671,4 +1427,45 @@ span.bar__phone-hide {
   width: 100%;
   vertical-align: middle;
   border-top: 1px solid var(--blank-faint);
+}
+
+/* System-wide Reduce Motion: every transition and animation in the app ends
+   instantly rather than each component opting in. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* The in-app update prompt. Top right, small, and never modal: the update is
+   already installed, so ignoring it costs nothing. */
+.update-notice {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 12px;
+  border-radius: 8px;
+  font-family: var(--blank-ui-font);
+  font-size: var(--blank-ui-size);
+  color: var(--blank-muted);
+  background: var(--blank-panel);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+
+.update-notice__btn {
+  color: var(--blank-fg);
+  padding: 2px 8px;
+  border-radius: 5px;
+}
+
+.update-notice__btn:hover {
+  background: var(--blank-panel-active);
 }

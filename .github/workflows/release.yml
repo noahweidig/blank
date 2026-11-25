@@ -1,19 +1,16 @@
 name: Release
 
-# Tag a version to cut a release:
-#   npm version 0.1.1 && git push --follow-tags
-# Or run this manually from the Actions tab.
+# Every push to main is a release: the minor version is bumped, committed back
+# to main, tagged, built and published, and installed apps pick it up through
+# the in-app updater. Docs-only pushes are skipped.
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+    paths-ignore: ['**.md']
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'Tag to release (e.g. v0.1.0). Created if missing.'
-        required: true
-        default: 'v0.1.0'
       prerelease:
-        description: 'Mark as a pre-release. GitHub keeps releases/latest off these, so links to the latest release stay on the last stable build.'
+        description: 'Mark as a pre-release. GitHub keeps releases/latest off these, so installed apps do not update to it.'
         type: boolean
         required: false
         default: false
@@ -22,8 +19,10 @@ on:
 permissions:
   contents: write
 
+# Releases queue rather than race: two bumps computed from the same version
+# would collide on the tag.
 concurrency:
-  group: release-${{ github.ref }}
+  group: release
   cancel-in-progress: false
 
 jobs:
@@ -37,9 +36,12 @@ jobs:
       # Signing is enabled only when a certificate actually exists. See the
       # "Enable Apple code signing" step for why this matters.
       HAS_APPLE_CERT: ${{ secrets.APPLE_CERTIFICATE != '' }}
+      HAS_UPDATER_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       # Compiling the Liquid Glass icon (icons/Blank.icon) needs actool from
       # Xcode 26; older Xcodes fail the bundle step.
@@ -89,6 +91,33 @@ jobs:
           npm run typecheck
           npm run test
 
+      # The bump commit is pushed with GITHUB_TOKEN, and GitHub never starts a
+      # workflow from a push made with that token, so this cannot loop.
+      - name: Bump minor version and tag
+        id: version
+        run: |
+          git pull --ff-only origin main
+          version=$(node scripts/bump-version.mjs)
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -am "Release $version"
+          git tag "v$version"
+          git push origin HEAD:main "v$version"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      # Same rule as Apple signing below: the updater key must not exist at
+      # all unless it is configured, or the bundler fails on a blank key.
+      - name: Enable updater artifacts
+        if: env.HAS_UPDATER_KEY == 'true'
+        run: |
+          {
+            echo "TAURI_SIGNING_PRIVATE_KEY<<__EOF__"
+            echo "${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}"
+            echo "__EOF__"
+            echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}"
+            echo 'UPDATER_ARGS=--config src-tauri/tauri.updater.conf.json'
+          } >> "$GITHUB_ENV"
+
       # Tauri reads APPLE_CERTIFICATE with std::env::var_os, which returns
       # Some("") for a variable that is DEFINED BUT EMPTY — as an unset GitHub
       # secret is. It then tries to import a blank certificate and the bundle
@@ -114,7 +143,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.event.inputs.tag || github.ref_name }}
+          tagName: ${{ steps.version.outputs.tag }}
           releaseName: 'Blank __VERSION__'
           releaseBody: |
             Download the `.dmg` below. Works on both Apple Silicon and Intel.
@@ -130,4 +159,4 @@ jobs:
           # A test build cut from a branch must not become releases/latest:
           # every link to the latest release would hand out the experimental one.
           prerelease: ${{ github.event.inputs.prerelease == 'true' }}
-          args: --target universal-apple-darwin
+          args: --target universal-apple-darwin ${{ env.UPDATER_ARGS }}
