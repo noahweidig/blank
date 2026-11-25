@@ -15,8 +15,8 @@ rewritten, never lost, and never leaves the machine.
 npm install
 npm run dev          # vite dev server
 npm run typecheck    # tsc --noEmit
-npm test             # vitest run, ~105 unit tests
-npm run e2e          # playwright, ~69 browser tests (builds first, see below)
+npm test             # vitest run, ~200 unit tests
+npm run e2e          # playwright, ~80 browser tests (builds first, see below)
 npm run build        # typecheck then vite build
 npm run build:only   # vite build alone
 ```
@@ -41,7 +41,7 @@ Before pushing: `npm run typecheck && npm test && npm run e2e`.
 app.html            The writing app, mounts src/main.tsx (the only page)
 src/
   components/       Canvas, BottomBar, HistorySidebar, CommandPalette
-  editor/           CodeMirror 6: setup, theme, focus, hardcore
+  editor/           CodeMirror 6: setup, theme, live preview, focus, hardcore
   state/            zustand store, settings and font stacks
   storage/          repository plus tauri and browser adapters
   model/            entry parsing, titles, word counts, search
@@ -152,22 +152,32 @@ they only exist when a certificate is really configured.
 
 **A font that is not installed measures exactly like the generic it falls back to.**
 `document.fonts.check` cannot tell you otherwise, since it accounts for fallback. Font
-availability in `src/state/settings.ts` is therefore measured on a canvas, and bundled
-webfonts must be loaded before they are measured or they report as missing.
+availability in `src/state/settings.ts` is therefore measured on a canvas. No fonts are
+bundled: every face is one macOS ships, and System is the default.
 
 ## Release
 
-Four files carry the version and must agree: `package.json`, `package-lock.json`,
-`src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`. `npm version` updates the first two
-only; the Cargo files and `tauri.conf.json` are manual, and `src-tauri/Cargo.lock` carries
-it a third time under `name = "blank"`.
+Every push to `main` that touches more than Markdown is a release. The Release workflow
+runs `scripts/bump-version.mjs` (minor bump, in all five places that carry the version:
+`package.json`, `package-lock.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`,
+`src-tauri/Cargo.lock`), commits that back to `main` as `Release x.y.0`, tags it, builds
+one universal macOS binary on a macOS 15 runner with Xcode 26, and publishes a non-draft
+release. Never bump the version by hand. Releases queue rather than run in parallel.
 
-Cut a release by pushing a `v*` tag, or run the Release workflow manually with a tag input
-(it creates the tag). It builds one universal macOS binary on a macOS 15 runner with Xcode
-26. `src-tauri/icons/Blank.icon` (Liquid Glass) is not in `bundle.icon` yet: actool
-rejected it, and a non-fatal workflow step prints why. Builds use `icon.icns` meanwhile. It
-publishes a non-draft release. Draft release assets return 404 for anyone but the repo
-owner, which would break every shared download link.
+Installed apps update themselves: `src/shell/updater.ts` checks
+`releases/latest/download/latest.json` on launch, installs in the background and offers a
+restart. That needs the `TAURI_SIGNING_PRIVATE_KEY` secret (plus its password secret) and
+the matching public key in `plugins.updater.pubkey` in `tauri.conf.json`. Without the
+secret, builds still publish but carry no updater artifacts; without the real public key,
+installed apps reject every update. Updater artifacts are switched on by
+`src-tauri/tauri.updater.conf.json`, passed only when the secret exists, for the same
+reason as Apple signing below.
+
+`src-tauri/icons/Blank.icon` (Liquid Glass) is not in `bundle.icon` yet: actool rejected
+it, and a non-fatal workflow step prints why. Builds use `icon.icns` meanwhile.
+
+Draft release assets return 404 for anyone but the repo owner, which would break every
+download link and the updater.
 
 Builds are unsigned unless signing secrets are configured, so first launch is blocked on
 macOS: System Settings, Privacy & Security, Open Anyway.

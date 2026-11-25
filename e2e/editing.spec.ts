@@ -108,47 +108,6 @@ test.describe('dropped files', () => {
   })
 })
 
-test.describe('fenced code blocks', () => {
-  /*
-   * An unclosed fence runs to the end of the document under CommonMark, which
-   * is how prose silently turned monospace: three backticks, keep writing, and
-   * every word after them is inside the block.
-   */
-  test('close themselves as they are opened', async ({ page }) => {
-    await freshApp(page)
-    await page.keyboard.type('```')
-    expect(await docText(page)).toBe('```\n```')
-  })
-
-  test('leave the caret where a language name goes', async ({ page }) => {
-    await freshApp(page)
-    await page.keyboard.type('```')
-    await page.keyboard.type('js')
-    expect(await docText(page)).toBe('```js\n```')
-  })
-
-  test('do not swallow the prose that follows them', async ({ page }) => {
-    await freshApp(page)
-    await page.keyboard.type('```')
-    await page.keyboard.press('Control+End')
-    await page.keyboard.press('Enter')
-    await page.keyboard.type('Ordinary prose.')
-
-    const line = page.locator('.cm-line', { hasText: 'Ordinary prose.' })
-    await expect(line).not.toHaveClass(/cm-blank-code/)
-  })
-
-  test('come back in one undo', async ({ page }) => {
-    await freshApp(page)
-    await page.keyboard.type('x')
-    await page.keyboard.press('Enter')
-    await page.keyboard.type('```')
-    expect(await docText(page)).toBe('x\n```\n```')
-    await page.keyboard.press('Control+z')
-    expect(await docText(page)).not.toContain('```')
-  })
-})
-
 test.describe('list continuation', () => {
   test('Enter carries a bullet to the next line', async ({ page }) => {
     await freshApp(page)

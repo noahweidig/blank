@@ -30,7 +30,9 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
     command: 'npm run build:only && npx vite preview --port 4173 --strictPort',
-    url: 'http://localhost:4173',
+    // app.html is the only page; the root 404s, and Playwright treats a 404
+    // as a server that is not up yet.
+    url: 'http://localhost:4173/app',
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
   },

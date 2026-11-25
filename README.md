@@ -107,7 +107,7 @@ BLANK_CHROMIUM=/path/to/chrome npm run e2e
 ## Getting the code
 
 ```bash
-git clone https://github.com/realanshuman/blank.git
+git clone https://github.com/noahweidig/blank.git
 cd blank
 npm install
 npm run dev
@@ -180,21 +180,20 @@ shipped product: Blank ships as a macOS app only.
 `.github/workflows/release.yml` builds the macOS installer on
 GitHub's runners, so you never have to build by hand.
 
-**Cut a release:**
+Every push to `main` is a release: the workflow bumps the minor version,
+commits it back, tags it and publishes a universal `.dmg`. Installed copies of
+Blank find the new version on their next launch, install it in the background
+and offer a restart.
+
+The updater needs a signing key pair, made once on your Mac:
 
 ```bash
-npm version 0.1.1        # bumps package.json and creates the tag
-git push --follow-tags
+npx tauri signer generate -w ~/.tauri/blank.key
 ```
 
-Or run **Actions → Release → Run workflow** and type a tag.
-
-It produces a **draft** GitHub Release — so you can check the binaries before
-anyone can download them — containing:
-
-| Platform | Artifact | Notes |
-|---|---|---|
-| macOS | `.dmg` | Universal: one download for Apple Silicon and Intel |
+Add the private key as the `TAURI_SIGNING_PRIVATE_KEY` secret (and its password
+as `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`), and put the public key in
+`plugins.updater.pubkey` in `src-tauri/tauri.conf.json`.
 
 Typecheck and unit tests run before the (slow) Rust compile, so a broken web
 layer fails in about a minute instead of fifteen. Rust builds are cached.

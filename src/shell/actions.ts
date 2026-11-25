@@ -1,7 +1,7 @@
 import { useStore } from '../state/store'
 import { FONT_SIZES, THEME_CYCLE, effectiveTheme } from '../state/settings'
 import type { ExportFormat } from '../export'
-import { findInCanvas } from '../components/Canvas'
+import { findInCanvas, formatInCanvas } from '../components/Canvas'
 
 /**
  * The things the native menu bar can ask for, by name.
@@ -24,6 +24,10 @@ export type ActionId =
   | 'export-md'
   | 'export-txt'
   | 'find'
+  | 'save'
+  | 'palette'
+  | 'bold'
+  | 'italic'
   | 'size-up'
   | 'size-down'
   | 'theme'
@@ -49,6 +53,8 @@ async function exportCurrent(format: ExportFormat): Promise<void> {
   const { exportEntries } = await import('../export')
   await exportEntries([entry], format, useStore.getState().readImageBytes)
 }
+
+export const PALETTE_EVENT = 'blank:palette'
 
 export async function runAction(id: string): Promise<void> {
   const store = useStore.getState()
@@ -96,6 +102,17 @@ export async function runAction(id: string): Promise<void> {
       return
     case 'history':
       updateSettings({ sidebarOpen: !settings.sidebarOpen })
+      return
+    case 'save':
+      await store.flush()
+      return
+    case 'palette':
+      // The palette's open state lives in App, which listens for this.
+      window.dispatchEvent(new Event(PALETTE_EVENT))
+      return
+    case 'bold':
+    case 'italic':
+      formatInCanvas(id as 'bold' | 'italic')
       return
   }
 }

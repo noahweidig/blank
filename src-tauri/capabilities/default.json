@@ -16,7 +16,6 @@
     "core:webview:allow-print",
     "opener:allow-open-url",
     "opener:allow-reveal-item-in-dir",
-    "os:default",
     "store:default",
     "dialog:allow-open",
     "dialog:allow-save",
@@ -47,6 +46,8 @@
           "path": "$DOCUMENT/**"
         }
       ]
-    }
+    },
+    "updater:default",
+    "process:allow-restart"
   ]
 }

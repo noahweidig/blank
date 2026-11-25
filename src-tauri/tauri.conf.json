@@ -49,7 +49,10 @@
     "longDescription": "Open it and write. Local-first, saved as plain Markdown.",
     "fileAssociations": [
       {
-        "ext": ["md", "markdown"],
+        "ext": [
+          "md",
+          "markdown"
+        ],
         "name": "Markdown Document",
         "description": "Markdown document",
         "role": "Editor",
@@ -58,6 +61,14 @@
     ],
     "macOS": {
       "minimumSystemVersion": "10.15"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "REPLACE_WITH_UPDATER_PUBLIC_KEY",
+      "endpoints": [
+        "https://github.com/noahweidig/blank/releases/latest/download/latest.json"
+      ]
     }
   }
 }

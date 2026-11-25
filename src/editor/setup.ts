@@ -1,7 +1,4 @@
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
-import { codeLanguages } from './code'
-import { codeBlocks } from './codeblock'
-import { balancedFences } from './fence'
 import { fileDrop } from './filedrop'
 import { markupKeymap } from './markup'
 import { taskLists } from './tasks'
@@ -61,18 +58,13 @@ function extensions(options: EditorOptions, cache: AssetCache): Extension[] {
     EditorState.allowMultipleSelections.of(true),
     placeholder(PLACEHOLDER),
 
-    // codeLanguages is what turns a fenced block into a parsed sub-document.
-    // Each grammar is lazily imported, so this costs nothing until a fence
-    // with a language on it actually appears in the text.
-    markdown({ base: markdownLanguage, addKeymap: false, codeLanguages }),
+    markdown({ base: markdownLanguage, addKeymap: false }),
     stylingCompartment.of(options.liveMarkdown ? markdownStyling() : plainStyling),
 
     editorTheme,
     assetGateway.of(options.assets ?? null),
     images(cache),
-    codeBlocks(),
     taskLists(),
-    balancedFences(),
     fileDrop(),
     markupKeymap(),
     focusMode(),

@@ -6,6 +6,8 @@ import { CommandPalette } from './components/CommandPalette'
 import { useStore } from './state/store'
 import { useTimer } from './session/timer'
 import { connectShell } from './shell/native'
+import { PALETTE_EVENT } from './shell/actions'
+import { installUpdateInBackground } from './shell/updater'
 
 export function App() {
   const ready = useStore((state) => state.ready)
@@ -42,6 +44,13 @@ export function App() {
   // of it stands down in a browser.
   useEffect(() => connectShell(), [])
 
+  const [update, setUpdate] = useState<{ version: string; restart: () => Promise<void> } | null>(
+    null,
+  )
+  useEffect(() => {
+    void installUpdateInBackground((version, restart) => setUpdate({ version, restart }))
+  }, [])
+
   // Persist before the window goes away. `visibilitychange` fires on mobile
   // where `beforeunload` does not, so both are needed to never lose text.
   useEffect(() => {
@@ -54,28 +63,6 @@ export function App() {
     return () => {
       window.removeEventListener('beforeunload', flush)
       document.removeEventListener('visibilitychange', onVisibility)
-    }
-  }, [])
-
-  // The iOS keyboard shrinks the visual viewport without resizing the layout
-  // viewport, so a bottom-anchored bar ends up underneath it. Track the
-  // difference and let CSS lift the bar clear.
-  useEffect(() => {
-    const viewport = window.visualViewport
-    if (!viewport) return
-
-    const update = () => {
-      const inset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
-      document.documentElement.style.setProperty('--blank-keyboard-inset', `${inset}px`)
-    }
-
-    update()
-    viewport.addEventListener('resize', update)
-    viewport.addEventListener('scroll', update)
-    return () => {
-      viewport.removeEventListener('resize', update)
-      viewport.removeEventListener('scroll', update)
-      document.documentElement.style.removeProperty('--blank-keyboard-inset')
     }
   }, [])
 
@@ -101,8 +88,13 @@ export function App() {
         updateSettings({ sidebarOpen: !settings.sidebarOpen })
       }
     }
+    const onPalette = () => setPaletteOpen((open) => !open)
     window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
+    window.addEventListener(PALETTE_EVENT, onPalette)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener(PALETTE_EVENT, onPalette)
+    }
   }, [])
 
   if (!ready) return <div className="app" aria-busy="true" />
@@ -142,6 +134,17 @@ export function App() {
       />
       <HistorySidebar open={sidebarOpen} />
       {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} />}
+      {update && (
+        <div className="update-notice" role="status">
+          <span>Blank {update.version} is ready.</span>
+          <button className="update-notice__btn" onClick={() => void update.restart()}>
+            Restart
+          </button>
+          <button className="update-notice__btn" aria-label="Later" onClick={() => setUpdate(null)}>
+            Later
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { memo, useEffect, useRef } from 'react'
 import { createEditor, type EditorHandle } from '../editor/setup'
 import { useStore } from '../state/store'
 import { FONT_SIZES } from '../state/settings'
+import { toggleBold, toggleItalic } from '../editor/markup'
 
 /**
  * The one live editor. A module-level handle because the host below is
@@ -27,6 +28,17 @@ export function focusCanvas(): void {
  */
 export function findInCanvas(): void {
   active?.find()
+}
+
+/**
+ * Bold and italic from the Format menu. A menu accelerator takes the key
+ * before the webview sees it, so ⌘B and ⌘I arrive here rather than through
+ * the editor's own keymap.
+ */
+export function formatInCanvas(kind: 'bold' | 'italic'): void {
+  if (!active) return
+  ;(kind === 'bold' ? toggleBold : toggleItalic)(active.view)
+  active.focus()
 }
 
 /**
