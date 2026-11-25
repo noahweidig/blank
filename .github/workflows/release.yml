@@ -46,6 +46,22 @@ jobs:
       - name: Select Xcode 26
         run: sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
 
+      # Diagnostic only. icons/Blank.icon is out of bundle.icon until actool
+      # accepts it: Tauri reports just "actool did not generate Assets.car",
+      # so compile it here and print what actool actually says.
+      - name: Check Liquid Glass icon (non-fatal)
+        continue-on-error: true
+        run: |
+          xcodebuild -version
+          mkdir -p "$RUNNER_TEMP/icon"
+          xcrun actool src-tauri/icons/Blank.icon \
+            --compile "$RUNNER_TEMP/icon" \
+            --platform macosx --minimum-deployment-target 11.0 \
+            --app-icon Blank \
+            --output-partial-info-plist "$RUNNER_TEMP/icon/partial.plist" \
+            --output-format human-readable-text --errors --warnings --notices
+          ls -la "$RUNNER_TEMP/icon"
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22

@@ -164,7 +164,8 @@ it a third time under `name = "blank"`.
 
 Cut a release by pushing a `v*` tag, or run the Release workflow manually with a tag input
 (it creates the tag). It builds one universal macOS binary on a macOS 15 runner with Xcode
-26 (needed by `actool` to compile the Liquid Glass icon `src-tauri/icons/Blank.icon`), and
+26. `src-tauri/icons/Blank.icon` (Liquid Glass) is not in `bundle.icon` yet: actool
+rejected it, and a non-fatal workflow step prints why. Builds use `icon.icns` meanwhile. It
 publishes a non-draft release. Draft release assets return 404 for anyone but the repo
 owner, which would break every shared download link.
 
