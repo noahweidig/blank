@@ -13,7 +13,7 @@ on:
         required: true
         default: 'v0.1.0'
       prerelease:
-        description: 'Mark as a pre-release. GitHub keeps releases/latest off these, so the download link on the landing page stays on the last stable build.'
+        description: 'Mark as a pre-release. GitHub keeps releases/latest off these, so links to the latest release stay on the last stable build.'
         type: boolean
         required: false
         default: false
@@ -109,10 +109,9 @@ jobs:
             **Open Anyway** next to Blank. Once only. Note the older
             right-click → Open trick no longer works on macOS 15 and later.
           # Published, not draft: a draft release's assets 404 for anyone who is
-          # not the repo owner, which would break the download link on the site.
+          # not the repo owner, which would break every shared download link.
           releaseDraft: false
           # A test build cut from a branch must not become releases/latest:
-          # that is what the landing page's download button resolves to, so
-          # every visitor would get the experimental one.
+          # every link to the latest release would hand out the experimental one.
           prerelease: ${{ github.event.inputs.prerelease == 'true' }}
           args: --target universal-apple-darwin

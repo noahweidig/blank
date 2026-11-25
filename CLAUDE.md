@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 Blank is a local-first freewriting app: one TypeScript codebase shipping a Tauri desktop
-app, a web app, a landing page and an install guide.
+app for macOS only.
 
 Setup, commands, layout, architecture, conventions, testing and the full list of traps live
 in the vendor-neutral guide. Read it first.
@@ -53,7 +53,7 @@ touching `src-tauri/`, `src/storage/tauri.ts`, `src/export/save.ts` or the capab
 is verified by `typecheck` and `cargo check` only, and lands for real at the next release.
 
 Say so plainly rather than implying it was seen working. The same applies to macOS font
-rendering and native dialogs: the web app in Safari is the closest proxy available.
+rendering and native dialogs: running the dev build in Safari is the closest proxy available.
 
 ## Scope
 

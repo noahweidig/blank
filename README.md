@@ -4,8 +4,7 @@ A blank canvas for freewriting. Open it and write — no toolbars, no sidebars i
 your way, no formatting decisions. Everything you write is saved locally, as
 plain Markdown you can read without this app.
 
-Inspired by [Freewrite](https://freewrite.io), rebuilt to run on macOS
-and iOS from one codebase, and to fix the things the original leaves out:
+Inspired by [Freewrite](https://freewrite.io), rebuilt as a macOS app, and to fix the things the original leaves out:
 searching your own archive, tagging it, knowing whether you actually wrote
 today, and never losing a draft.
 
@@ -47,12 +46,6 @@ today, and never losing a draft.
 - PDF, Word `.docx`, plain text, Markdown, and bulk CSV / JSON for your whole
   archive. PDFs are generated directly rather than through a print dialog, so
   the output is identical on every platform and needs no user interaction.
-
-**Everywhere**
-
-- Runs in any browser today, and deploys as a static site (see below).
-- Native macOS and iOS builds via Tauri, and PWA install — both still
-  to come; see Status.
 
 ---
 
@@ -178,11 +171,9 @@ the app asks for one; "Change writing folder…" in the command palette (⌘K) m
 it later. Point it at iCloud Drive or Dropbox and it syncs; open the same folder
 in Obsidian and your entries are just files.
 
-In a browser the identical code falls back to the browser's own storage, so
-`npm run dev` still works on any machine without the native toolchain.
-
-Note that the desktop window opens `app.html`, not `index.html` — `index.html`
-is the marketing landing page, which only makes sense on the web.
+Outside Tauri the code falls back to IndexedDB, so `npm run dev` and the test
+suite run the UI in a plain browser. That is a development harness, not a
+shipped product: Blank ships as a macOS app only.
 
 ## Releasing installers automatically
 
@@ -236,35 +227,6 @@ unset GitHub secret expands to — so it would try to import a blank certificate
 and fail the macOS bundle step. The variables must not exist at all when there
 is nothing to sign with.
 
-## Deploying to Vercel
-
-The whole app is a static site — there is no server, no database and no API.
-Vercel serves it as-is, so you get the real working app at a URL, not just a
-marketing page.
-
-The deploy serves two pages:
-
-| URL | Page |
-|---|---|
-| `/` | the landing page — pure HTML and CSS, no JavaScript at all |
-| `/app` | the writing app |
-
-**From the dashboard:** New Project → import `realanshuman/blank` → Deploy.
-`vercel.json` already pins the framework, build command, output directory,
-routing and cache headers, so there is nothing to configure.
-
-**From the CLI:**
-
-```bash
-npm i -g vercel
-vercel        # preview deploy
-vercel --prod # production
-```
-
-One thing to know about hosting it: entries are stored in each visitor's own
-browser, so everyone who opens the URL gets their own private, empty canvas.
-Nothing is shared and nothing reaches a server. That makes it a great way to let
-people try the app — and it is also why the URL is not a backup of your writing.
 
 ---
 
@@ -309,7 +271,6 @@ Still to come:
   on macOS, plus external-change watching and native menus.
 - **Phase 3** — SQLite full-text index, a version-history timeline with diffs,
   and bulk export in a worker.
-- **Phase 4** — iOS, and PWA offline polish.
 
-The desktop app is macOS only. macOS and iOS binaries are built on a Mac (or in
+The desktop app is macOS only. It is built on a Mac (or in
 CI). The Liquid Glass icon needs Xcode 26.

@@ -10,7 +10,7 @@ import './styles/app.css'
 stampShell()
 
 const container = document.getElementById('root')
-if (!container) throw new Error('#root is missing from index.html')
+if (!container) throw new Error('#root is missing from app.html')
 
 createRoot(container).render(
   <StrictMode>
